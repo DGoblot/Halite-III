@@ -1,3 +1,5 @@
+# Project forked for school project ! Original ReadMe below.
+
 # Halite
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/HaliteChallenge/Halite/master/LICENSE)
