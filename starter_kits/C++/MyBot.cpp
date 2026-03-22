@@ -4,6 +4,7 @@
 
 #include <random>
 #include <ctime>
+#include <fstream>
 
 using namespace std;
 using namespace hlt;
@@ -23,6 +24,10 @@ int main(int argc, char* argv[]) {
     // As soon as you call "ready" function below, the 2 second per turn timer will start.
 
     unique_ptr<GameMap>& initial_game_map = game.game_map;
+
+    ofstream log("log.txt");
+    log << initial_game_map->best_zone();
+    log.close();
 
     game.ready("MyCppBot");
 
