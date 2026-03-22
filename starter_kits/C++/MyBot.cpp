@@ -4,6 +4,7 @@
 
 #include <random>
 #include <ctime>
+#include "farmer.hpp"
 
 using namespace std;
 using namespace hlt;
@@ -24,6 +25,8 @@ int main(int argc, char* argv[]) {
 
     unique_ptr<GameMap>& initial_game_map = game.game_map;
 
+    FarmerBT farmerBT = FarmerBT();
+
     game.ready("MyCppBot");
 
     log::log("Successfully created bot! My Player ID is " + to_string(game.my_id) + ". Bot rng seed is " + to_string(rng_seed) + ".");
@@ -37,12 +40,9 @@ int main(int argc, char* argv[]) {
 
         for (const auto& ship_iterator : me->ships) {
             shared_ptr<Ship> ship = ship_iterator.second;
-            if (game_map->at(ship)->halite < constants::MAX_HALITE / 10 || ship->is_full()) {
-                Direction random_direction = ALL_CARDINALS[rng() % 4];
-                command_queue.push_back(ship->move(random_direction));
-            } else {
-                command_queue.push_back(ship->stay_still());
-            }
+            Command shipCommand;
+            farmerBT.evaluate(&game, ship, &shipCommand);
+            command_queue.push_back(shipCommand);
         }
 
         if (
