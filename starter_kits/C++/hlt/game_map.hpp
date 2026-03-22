@@ -10,6 +10,7 @@ namespace hlt {
         int width;
         int height;
         std::vector<std::vector<MapCell>> cells;
+        int circle_radius = 3;
 
         MapCell* at(const Position& position) {
             Position normalized = normalize(position);
@@ -84,6 +85,34 @@ namespace hlt {
             }
 
             return Direction::STILL;
+        }
+
+        // Check zone with lot of halite
+        Position best_zone() {
+            int max = 0;
+            Position max_pos;
+            for each(auto row in cells) {
+                for each(MapCell cell in row) {
+                    if (halite_around(cell.position) > max) {
+                        max = halite_around(cell.position);
+                        max_pos = cell.position;
+                    }
+                }
+            }
+            return max_pos;
+        }
+
+        int halite_around(Position pos) {
+            int res = 0;
+            for (int i = -circle_radius; i <= circle_radius; i++) {
+                for (int j = -circle_radius; j <= circle_radius; j++) {
+
+                    if (abs(i) + abs(j) > circle_radius) continue; //out of scope 
+
+                    res += at(normalize({ pos.x + i,pos.y + j }))->halite;
+                }
+            }
+            return res;
         }
 
         void _update();

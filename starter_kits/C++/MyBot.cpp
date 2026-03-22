@@ -5,6 +5,7 @@
 #include <random>
 #include <ctime>
 #include "farmer.hpp"
+#include <fstream>
 
 using namespace std;
 using namespace hlt;
@@ -26,6 +27,9 @@ int main(int argc, char* argv[]) {
     unique_ptr<GameMap>& initial_game_map = game.game_map;
 
     FarmerBT farmerBT = FarmerBT();
+    ofstream log("log.txt");
+    log << initial_game_map->best_zone();
+    log.close();
 
     game.ready("MyCppBot");
 
