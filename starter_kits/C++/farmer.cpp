@@ -47,7 +47,7 @@ FarmerBT::FarmerBT()
 void FarmerBT::evaluate(hlt::Game* game, std::shared_ptr<hlt::Ship> ship, hlt::Command* command)
 {
 	Context ctx{ game, ship, command};
-	hlt::log::log("Root");
+	hlt::log::log("Ship " + std::to_string(ship->id));
 	btRoot->Evaluate(&ctx);
 }
 
@@ -84,7 +84,7 @@ BT_NODE::State FarmerBT::evNotOnBestCell(void* data)
 	auto  betterCell = false;
 	for (hlt::Position pos: surrounding_cells)
 	{
-		if (ctx->game->game_map->at(pos)->halite > ctx->game->game_map->at(ctx->ship->position)->halite)
+		if (ctx->game->game_map->at(pos)->halite > ctx->game->game_map->at(ctx->ship->position)->halite && ctx->game->game_map->at(pos)->is_empty())
 		{
 			bestNearbyCell = pos;
 			betterCell = true;
@@ -92,12 +92,12 @@ BT_NODE::State FarmerBT::evNotOnBestCell(void* data)
 	}
 	if (!betterCell && ctx->game->game_map->at(ctx->ship->position)->has_structure())
 	{
-		hlt::Position emptyCell = ctx->ship->position.directional_offset(hlt::Direction::NORTH);
-		while (ctx->game->game_map->at(emptyCell)->is_occupied())
+		int i = 0;
+		while (ctx->game->game_map->at(surrounding_cells[i])->is_occupied() && i < 3)
 		{
-			emptyCell = emptyCell.directional_offset(hlt::Direction::NORTH);
+			i++;
 		}
-		bestNearbyCell = emptyCell;
+		bestNearbyCell = surrounding_cells[i];
 		betterCell = true;
 	}
 	if (betterCell)
@@ -120,7 +120,7 @@ BT_NODE::State FarmerBT::evWorthMoving(void* data)
 		hlt::log::log("Worth moving");
 		return BT_NODE::SUCCESS;
 	}
-	hlt::log::log("Not worth moving");
+	hlt::log::log("Not worth moving: " + std::to_string(ctx->ship->position.x) + ", " + std::to_string(ctx->ship->position.y) + " : " + std::to_string(currentCellHalite) + " ; " + std::to_string(bestNearbyCellHalite));
 	return  BT_NODE::FAILURE;
 }
 
@@ -152,16 +152,7 @@ BT_NODE::State FarmerBT::evMine(void* data)
 BT_NODE::State FarmerBT::evGoingToHaliteSpot(void* data)
 {
 	const auto ctx = static_cast<Context*>(data);
-	const std::array<hlt::Position, 4> surrounding_cells = ctx->ship->position.get_surrounding_cardinals();
-	hlt::Position destination = surrounding_cells[0];
-	for (hlt::Position pos: surrounding_cells)
-	{
-		if (ctx->game->game_map->at(pos)->halite > ctx->game->game_map->at(destination)->halite)
-		{
-			destination = pos;
-		}
-	}
-	*ctx->command = ctx->ship->move(ctx->game->game_map->naive_navigate(ctx->ship, destination));
+	*ctx->command = ctx->ship->move(ctx->game->game_map->naive_navigate(ctx->ship, bestNearbyCell));
 	hlt::log::log("Going to better halite spot");
 	return BT_NODE::SUCCESS;
 }
