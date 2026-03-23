@@ -9,4 +9,5 @@ struct Context
 	std::shared_ptr<hlt::Ship> ship;
 	hlt::Command* command;
 	hlt::Position bestNearbyCell;
+	std::shared_ptr<hlt::Ship> target;
 };

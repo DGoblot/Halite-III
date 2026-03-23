@@ -10,7 +10,7 @@ class FarmerBT
 public:
     FarmerBT();
     void evaluate(hlt::Game* game,
-        std::shared_ptr<hlt::Ship> ship,
+        const std::shared_ptr<hlt::Ship> ship,
         hlt::Command* command);
 
 private:
@@ -22,10 +22,15 @@ private:
     static BT_NODE::State fleeingPossible(Context& ctx);
     static BT_NODE::State notOnBestCell(Context& ctx);
     static BT_NODE::State worthMoving(Context& ctx);
+    static BT_NODE::State nearbyTarget(Context& ctx);
+    static BT_NODE::State loadAdvantage(Context& ctx);
 
     // Actions
     static BT_NODE::State goingBackHome(Context& ctx);
     static BT_NODE::State createDropoff(Context& ctx);
     static BT_NODE::State farm(Context& ctx);
     static BT_NODE::State goingToHaliteSpot(Context& ctx);
+    static BT_NODE::State chaseTarget(Context& ctx);
+
+    static std::shared_ptr<hlt::Ship> bestHunter(Context& ctx);
 };
