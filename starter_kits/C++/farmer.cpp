@@ -27,7 +27,7 @@ FarmerBT::FarmerBT()
 }
 
 void FarmerBT::evaluate(hlt::Game* game,
-    std::shared_ptr<hlt::Ship> ship,
+    const std::shared_ptr<hlt::Ship> ship,
     hlt::Command* command)
 {
     Context ctx{ game, ship, command };
@@ -80,7 +80,7 @@ BT_NODE::State FarmerBT::notOnBestCell(Context& ctx)
     }
 
     if (!betterCell &&
-        ctx.game->game_map->at(ctx.ship->position)->has_structure())
+        ctx.game->game_map->at(ctx.ship->position)->halite <= 10)
     {
         int i = 0;
         while (i < 3 &&
@@ -111,7 +111,7 @@ BT_NODE::State FarmerBT::worthMoving(Context& ctx)
     auto best =
         ctx.game->game_map->at(ctx.bestNearbyCell)->halite;
 
-    if (ctx.game->game_map->at(ctx.ship->position)->has_structure() ||
+    if (current <= 10 ||
         (current <= 100 && best - current > current))
     {
         hlt::log::log("Worth moving");
