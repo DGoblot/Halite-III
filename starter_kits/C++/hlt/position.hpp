@@ -4,6 +4,7 @@
 #include "direction.hpp"
 
 #include <iostream>
+#include <vector>
 
 namespace hlt {
     struct Position {
@@ -59,6 +60,22 @@ namespace hlt {
                 directional_offset(Direction::NORTH), directional_offset(Direction::SOUTH),
                 directional_offset(Direction::EAST), directional_offset(Direction::WEST)
             }};
+        }
+
+        std::vector<Position> get_circle_zone_positions(int radius)
+        {
+            std::vector<Position> zone;
+            zone.reserve(1 + 2 * radius * (radius + 1));
+            zone.push_back(*this);
+            for (int d = 1; d <= radius; d++) {
+                for (int dx = -d; dx <= d; dx++) {
+                    int dy = d - std::abs(dx);
+                    zone.emplace_back(x + dx, y + dy);
+                    if (dy != 0)
+                        zone.emplace_back(x + dx, y - dy);
+                }
+            }
+            return zone;
         }
     };
 
