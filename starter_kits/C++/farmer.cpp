@@ -84,6 +84,7 @@ BT_NODE::State FarmerBT::notOnBestCell(Context& ctx)
         ctx.ship->position.get_circle_zone_positions(5);
 
     bool betterCell = false;
+    double bestCellValue = 0;
 
     for (auto pos : surrounding)
     {
@@ -91,8 +92,13 @@ BT_NODE::State FarmerBT::notOnBestCell(Context& ctx)
             ctx.game->game_map->at(ctx.ship->position)->halite &&
             ctx.game->game_map->at(pos)->is_empty())
         {
-            ctx.bestNearbyCell = pos;
-            betterCell = true;
+            auto newCellValue = ctx.game->game_map->at(pos)->halite - 0.1 * ctx.game->game_map->at(pos)->halite * ctx.game->game_map->calculate_distance(ctx.ship->position, pos);
+            if (newCellValue > bestCellValue)
+            {
+                bestCellValue = newCellValue;
+				ctx.bestNearbyCell = pos;
+				betterCell = true;
+            }
         }
     }
 
