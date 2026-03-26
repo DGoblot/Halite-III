@@ -81,7 +81,7 @@ BT_NODE::State FarmerBT::fleeingPossible(Context& ctx)
 BT_NODE::State FarmerBT::notOnBestCell(Context& ctx)
 {
     const auto surrounding =
-        ctx.ship->position.get_surrounding_cardinals();
+        ctx.ship->position.get_circle_zone_positions(5);
 
     bool betterCell = false;
 

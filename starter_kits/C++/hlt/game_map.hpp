@@ -104,13 +104,9 @@ namespace hlt {
 
         int halite_around(Position pos) {
             int res = 0;
-            for (int i = -circle_radius; i <= circle_radius; i++) {
-                for (int j = -circle_radius; j <= circle_radius; j++) {
-
-                    if (abs(i) + abs(j) > circle_radius) continue; //out of scope 
-
-                    res += at(normalize({ pos.x + i,pos.y + j }))->halite;
-                }
+            for (auto position : pos.get_circle_zone_positions(3))
+            {
+				res += at(position)->halite;
             }
             return res;
         }
