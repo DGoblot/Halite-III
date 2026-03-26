@@ -147,13 +147,20 @@ BT_NODE::State FarmerBT::worthMoving(Context& ctx)
 
 BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
 {
+    hlt::Direction nextDir;
+    if(ctx.game->game_map->calculate_distance(ctx.ship->position,  ctx.game->me->shipyard->position) <= 1)
+    {
+        nextDir = ctx.game->game_map->naive_navigate(ctx.ship, ctx.game->me->shipyard->position);
+    } else
+    {
+		nextDir = ctx.game->game_map->naive_navigate(
+			ctx.ship,
+			ctx.game->game_map->find_path(ctx.ship->position, ctx.game->me->shipyard->position).at(1));
+    }
     *ctx.command =
-        ctx.ship->move(
-            ctx.game->game_map->naive_navigate(
-                ctx.ship,
-                ctx.game->me->shipyard->position));
+        ctx.ship->move(nextDir);
 
-    hlt::log::log("Home run");
+    hlt::log::log("Home run : " + std::to_string(ctx.ship->position.directional_offset(nextDir).x) + ", " + std::to_string(ctx.ship->position.directional_offset(nextDir).y));
     return BT_NODE::State::SUCCESS;
 }
 
@@ -175,13 +182,20 @@ BT_NODE::State FarmerBT::farm(Context& ctx)
 
 BT_NODE::State FarmerBT::goingToHaliteSpot(Context& ctx)
 {
+    hlt::Direction nextDir;
+    if(ctx.game->game_map->calculate_distance(ctx.ship->position,  ctx.bestNearbyCell) <= 1)
+    {
+        nextDir = ctx.game->game_map->naive_navigate(ctx.ship, ctx.bestNearbyCell);
+    } else
+    {
+		nextDir = ctx.game->game_map->naive_navigate(
+			ctx.ship,
+			ctx.game->game_map->find_path(ctx.ship->position, ctx.bestNearbyCell).at(1));
+    }
     *ctx.command =
-        ctx.ship->move(
-            ctx.game->game_map->naive_navigate(
-                ctx.ship,
-                ctx.bestNearbyCell));
+        ctx.ship->move(nextDir);
 
-    hlt::log::log("Going to better halite spot");
+    hlt::log::log("Going to better halite spot : " + std::to_string(ctx.ship->position.directional_offset(nextDir).x) + ", " + std::to_string(ctx.ship->position.directional_offset(nextDir).y));
     return BT_NODE::State::SUCCESS;
 }
 
