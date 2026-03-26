@@ -12,7 +12,8 @@ FarmerBT::FarmerBT()
 		sequencer({
 			selector({
 				leaf([](Context& ctx) { return enemyTooClose(ctx); }),
-				leaf([](Context& ctx) { return shipFull(ctx); })
+				leaf([](Context& ctx) { return shipFull(ctx); }),
+				leaf([](Context& ctx) { return timeIsUp(ctx); })
 			}),
 			selector({
 				sequencer({
@@ -57,6 +58,17 @@ BT_NODE::State FarmerBT::shipFull(Context& ctx)
     }
 
     hlt::log::log("Ship not full");
+    return BT_NODE::State::FAILURE;
+}
+
+BT_NODE::State FarmerBT::timeIsUp(Context& ctx)
+{
+    if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) >= hlt::constants::MAX_TURNS-ctx.game->turn_number)
+    {
+		hlt::log::log("Time's up !");
+        return BT_NODE::State::SUCCESS;
+    }
+    hlt::log::log("There is time left");
     return BT_NODE::State::FAILURE;
 }
 

@@ -19,6 +19,7 @@ private:
     // Input
     static BT_NODE::State enemyTooClose(Context& ctx);
     static BT_NODE::State shipFull(Context& ctx);
+    static BT_NODE::State timeIsUp(Context& ctx);
     static BT_NODE::State fleeingPossible(Context& ctx);
     static BT_NODE::State notOnBestCell(Context& ctx);
     static BT_NODE::State worthMoving(Context& ctx);
