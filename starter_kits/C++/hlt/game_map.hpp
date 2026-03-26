@@ -4,6 +4,8 @@
 #include "map_cell.hpp"
 
 #include <vector>
+#include <map>
+#include <algorithm>
 
 namespace hlt {
     struct GameMap {
@@ -85,6 +87,96 @@ namespace hlt {
             }
 
             return Direction::STILL;
+        }
+
+        std::vector<Position> reconstruct_path(std::map<Position, Position> cameFrom, Position current) {
+            std::vector<Position> total_path = { current };
+            std::map<int, char> test;
+            auto search = cameFrom.find(current);
+            while ( search != cameFrom.end())
+            {
+                current = cameFrom.at(current);
+                total_path.push_back(current);
+                search = cameFrom.find(current);
+            }
+        	return total_path;
+        }
+
+        std::vector<Position> find_path(Position start, Position goal)
+        {
+            if (calculate_distance(start, goal) <= 1)
+            {
+                return { start, goal };
+            }
+            // The greater this factor is the more the path will prioritize shortness over cost of moves
+            int speedOverHalite = 100;
+            std::vector<Position> openSet = {start};
+            std::vector<Position> closedSet;
+
+            std::map<Position, Position> cameFrom;
+
+            std::map<Position, int> gScore;
+            for (auto cellList : cells)
+            {
+                for (auto cell: cellList)
+                {
+                    gScore.insert({cell.position, INT_MAX});
+                }
+            }
+            gScore.at(start) = 0;
+
+            std::map<Position, int> fScore;
+            for (auto cellList : cells)
+            {
+                for (auto cell: cellList)
+                {
+                    fScore.insert({cell.position, INT_MAX});
+                }
+            }
+            fScore.at(start) = calculate_distance(start, goal) * speedOverHalite;
+
+            while (!openSet.empty())
+            {
+                Position current = openSet.at(0);
+                for (Position pos: openSet)
+                {
+	                if (fScore.at(pos) < fScore.at(current))
+	                {
+                        current = pos;
+	                }
+                }
+                log::log("Pathfinding testing position :" + std::to_string(current.x) + ", " + std::to_string(current.y));
+                if (current == goal)
+                {
+                    return reconstruct_path(cameFrom, current);
+                }
+                closedSet.push_back(current);
+                openSet.erase(std::remove(openSet.begin(), openSet.end(), current), openSet.end());
+            	for (auto neighbor : current.get_surrounding_cardinals())
+				{
+                    if (std::find(closedSet.begin(), closedSet.end(), neighbor) != closedSet.end())
+                    {
+                        continue;
+                    }
+                    int tentativeGScore = gScore.at(current) + at(current)->halite + speedOverHalite;
+                    if(at(neighbor)->is_occupied() && neighbor!=goal)
+                    {
+                        tentativeGScore = INT_MAX;
+                    }
+					if (tentativeGScore < gScore[neighbor])
+					{
+                        cameFrom[neighbor] = current;
+                        gScore[neighbor] = tentativeGScore;
+                        fScore.at(neighbor) = tentativeGScore + calculate_distance(neighbor, goal) * speedOverHalite;
+                        if (std::find(openSet.begin(),  openSet.end(), neighbor) == openSet.end())
+                        {
+                            openSet.push_back(neighbor);
+                        }
+					}
+				}
+            }
+			// Open set is empty but goal was never reached
+            return {start, goal};
         }
 
         // Check zone with lot of halite
