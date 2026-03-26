@@ -155,7 +155,7 @@ BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
     {
 		nextDir = ctx.game->game_map->naive_navigate(
 			ctx.ship,
-			ctx.game->game_map->find_path(ctx.ship->position, ctx.game->me->shipyard->position).at(1));
+			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.game->me->shipyard->position).end()-2));
     }
     *ctx.command =
         ctx.ship->move(nextDir);
@@ -190,7 +190,7 @@ BT_NODE::State FarmerBT::goingToHaliteSpot(Context& ctx)
     {
 		nextDir = ctx.game->game_map->naive_navigate(
 			ctx.ship,
-			ctx.game->game_map->find_path(ctx.ship->position, ctx.bestNearbyCell).at(1));
+			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.bestNearbyCell, exitingStructure).end()-2));
     }
     *ctx.command =
         ctx.ship->move(nextDir);

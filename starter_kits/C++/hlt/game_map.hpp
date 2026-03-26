@@ -91,13 +91,17 @@ namespace hlt {
 
         std::vector<Position> reconstruct_path(std::map<Position, Position> cameFrom, Position current) {
             std::vector<Position> total_path = { current };
-            std::map<int, char> test;
             auto search = cameFrom.find(current);
             while ( search != cameFrom.end())
             {
                 current = cameFrom.at(current);
                 total_path.push_back(current);
                 search = cameFrom.find(current);
+            }
+            log::log("Pathfinding Result = ");
+            for (auto pos : total_path)
+            {
+                log::log(std::to_string(pos.x) + ", " + std::to_string(pos.y));
             }
         	return total_path;
         }
@@ -106,7 +110,7 @@ namespace hlt {
         {
             if (calculate_distance(start, goal) <= 1)
             {
-                return { start, goal };
+                return { goal, start };
             }
             // The greater this factor is the more the path will prioritize shortness over cost of moves
             int speedOverHalite = 100;
@@ -176,7 +180,7 @@ namespace hlt {
 				}
             }
 			// Open set is empty but goal was never reached
-            return {start, goal};
+            return {goal, start};
         }
 
         // Check zone with lot of halite
