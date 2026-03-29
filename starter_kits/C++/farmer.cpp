@@ -63,7 +63,7 @@ BT_NODE::State FarmerBT::shipFull(Context& ctx)
 
 BT_NODE::State FarmerBT::timeIsUp(Context& ctx)
 {
-    if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) >= hlt::constants::MAX_TURNS-ctx.game->turn_number)
+    if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) >= hlt::constants::MAX_TURNS-ctx.game->turn_number - 10)
     {
 		hlt::log::log("Time's up !");
         return BT_NODE::State::SUCCESS;
@@ -183,6 +183,7 @@ BT_NODE::State FarmerBT::farm(Context& ctx)
 BT_NODE::State FarmerBT::goingToHaliteSpot(Context& ctx)
 {
     hlt::Direction nextDir;
+    bool exitingStructure = ctx.game->game_map->at(ctx.ship->position)->has_structure();
     if(ctx.game->game_map->calculate_distance(ctx.ship->position,  ctx.bestNearbyCell) <= 1)
     {
         nextDir = ctx.game->game_map->naive_navigate(ctx.ship, ctx.bestNearbyCell);
@@ -202,38 +203,43 @@ BT_NODE::State FarmerBT::goingToHaliteSpot(Context& ctx)
 BT_NODE::State FarmerBT::nearbyTarget(Context& ctx)
 {
     int circle_radius = 3;
+    if (ctx.ship->halite <= 50 && hlt::constants::MAX_TURNS - ctx.game->turn_number <= 10)
+    {
+        circle_radius = ctx.game->game_map->width;
+        hlt::log::log("Last minute hunter mode");
+    }
     hlt::Position pos = ctx.ship->position;
     int bestTargetCargo = 0;
-	for (int i = -circle_radius; i <= circle_radius; i++) {
-		for (int j = -circle_radius; j <= circle_radius; j++) {
+    for (int i = -circle_radius; i <= circle_radius; i++) {
+        for (int j = -circle_radius; j <= circle_radius; j++) {
 
-			if (abs(i) + abs(j) > circle_radius) continue; 
+            if (abs(i) + abs(j) > circle_radius) continue;
             if (ctx.game->game_map->at(ctx.game->game_map->normalize({ pos.x + i,pos.y + j }))->is_occupied() && ctx.game->game_map->at(ctx.game->game_map->normalize({ pos.x + i,pos.y + j }))->ship->owner != ctx.game->me->id)
             {
                 std::shared_ptr<hlt::Ship> target = ctx.game->game_map->at(ctx.game->game_map->normalize({ pos.x + i,pos.y + j }))->ship;
                 for (std::shared_ptr<hlt::Player> player : ctx.game->players)
                 {
-	               if (player->id != ctx.game->me->id)
-	               {
-                       int smallestDropoffDist = ctx.game->game_map->calculate_distance(target->position, player->shipyard->position);
-		               for (auto dropoff : player->dropoffs)
-		               {
-                           smallestDropoffDist = std::min(smallestDropoffDist, ctx.game->game_map->calculate_distance(target->position, dropoff.second->position));
-		               }
-						if (ctx.game->game_map->calculate_distance(target->position, pos) < smallestDropoffDist)
-						{
+                    if (player->id != ctx.game->me->id)
+                    {
+                        int smallestDropoffDist = ctx.game->game_map->calculate_distance(target->position, player->shipyard->position);
+                        for (auto dropoff : player->dropoffs)
+                        {
+                            smallestDropoffDist = std::min(smallestDropoffDist, ctx.game->game_map->calculate_distance(target->position, dropoff.second->position));
+                        }
+                        if (ctx.game->game_map->calculate_distance(target->position, pos) < smallestDropoffDist ||  hlt::constants::MAX_TURNS - ctx.game->turn_number <= 10)
+                        {
                             if (bestTargetCargo < target->halite)
                             {
-								ctx.target = target;
+                                ctx.target = target;
                                 bestTargetCargo = target->halite;
                             }
-						}
-	               }
+                        }
+                    }
                 }
             }
-		}
-	}
-    if (bestTargetCargo>0 && bestHunter(ctx) == ctx.ship)
+        }
+    }
+    if (bestTargetCargo > 0 && (bestHunter(ctx) == ctx.ship || hlt::constants::MAX_TURNS - ctx.game->turn_number <= 10))
     {
     	hlt::log::log("Target Acquired");
         return BT_NODE::State::SUCCESS;
@@ -244,6 +250,10 @@ BT_NODE::State FarmerBT::nearbyTarget(Context& ctx)
 
 BT_NODE::State FarmerBT::loadAdvantage(Context& ctx)
 {
+    if (hlt::constants::MAX_TURNS-ctx.game->turn_number <= 10)
+    {
+        return BT_NODE::State::SUCCESS;
+    }
     std::shared_ptr<hlt::Player> opponent;
     for (std::shared_ptr<hlt::Player> player : ctx.game->players)
     {
@@ -267,6 +277,11 @@ BT_NODE::State FarmerBT::chaseTarget(Context& ctx)
     if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.target->position) == 1)
     {
         next_move = ctx.game->game_map->get_unsafe_moves(ctx.ship->position, ctx.target->position)[0];
+    } else
+    {
+		next_move = ctx.game->game_map->naive_navigate(
+			ctx.ship,
+			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.target->position, true).end()-2));
     }
     *ctx.command = ctx.ship->move(next_move);
     hlt::log::log("Pursuit predation");

@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
     log << initial_game_map->best_zone();
     log.close();
 
+    game.game_map->at(game.me->shipyard->position.directional_offset(Direction::WEST))->structureExit = true;
+
     game.ready("MyCppBot");
 
     log::log("Successfully created bot! My Player ID is " + to_string(game.my_id) + ". Bot rng seed is " + to_string(rng_seed) + ".");

@@ -106,7 +106,7 @@ namespace hlt {
         	return total_path;
         }
 
-        std::vector<Position> find_path(Position start, Position goal)
+        std::vector<Position> find_path(Position start, Position goal, bool exiting_shipyard = false)
         {
             if (calculate_distance(start, goal) <= 1)
             {
@@ -163,7 +163,8 @@ namespace hlt {
                         continue;
                     }
                     int tentativeGScore = gScore.at(current) + at(current)->halite + speedOverHalite;
-                    if(at(neighbor)->is_occupied() && neighbor!=goal)
+                    if(at(neighbor)->is_occupied() && neighbor!=goal ||
+                        !exiting_shipyard && at(neighbor)->structureExit)
                     {
                         tentativeGScore = INT_MAX;
                     }
@@ -180,7 +181,7 @@ namespace hlt {
 				}
             }
 			// Open set is empty but goal was never reached
-            return {goal, start};
+            return {start, start};
         }
 
         // Check zone with lot of halite
