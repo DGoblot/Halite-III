@@ -2,6 +2,7 @@
 
 #include "BT.hpp"
 #include "shipBT.hpp"
+#include <unordered_map>
 
 class FarmerBT:ShipBT
 {
@@ -13,6 +14,7 @@ public:
 
 private:
     NodePtr tree;
+	static std::unordered_map<hlt::EntityId, bool> s_goingHomeStates;
 
     // Input
     static BT_NODE::State enemyTooClose(Context& ctx);
@@ -25,6 +27,7 @@ private:
     static BT_NODE::State worthMoving(Context& ctx);
     static BT_NODE::State nearbyTarget(Context& ctx);
     static BT_NODE::State loadAdvantage(Context& ctx);
+    static BT_NODE::State alreadyGoing(Context& ctx);
 
     // Actions
     static BT_NODE::State goingBackHome(Context& ctx);

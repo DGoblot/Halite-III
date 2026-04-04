@@ -10,4 +10,5 @@ struct Context
 	hlt::Command* command;
 	hlt::Position bestNearbyCell;
 	std::shared_ptr<hlt::Ship> target;
+	bool timeIsUp = false;
 };

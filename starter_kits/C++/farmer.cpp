@@ -1,7 +1,6 @@
 ﻿#include "farmer.hpp"
-#include <unordered_map>
 
-static std::unordered_map<hlt::EntityId, bool> s_goingHomeStates;
+std::unordered_map<int, bool> FarmerBT::s_goingHomeStates;
 
 FarmerBT::FarmerBT()
 {
@@ -13,9 +12,10 @@ FarmerBT::FarmerBT()
         }),
 		sequencer({
 			selector({
+				leaf([](Context& ctx) { return timeIsUp(ctx); }),
+                leaf([](Context& ctx) {return alreadyGoing(ctx); }),
 				leaf([](Context& ctx) { return enemyTooClose(ctx); }),
-				leaf([](Context& ctx) { return shipFull(ctx); }),
-				leaf([](Context& ctx) { return timeIsUp(ctx); })
+				leaf([](Context& ctx) { return shipFull(ctx); })
 			}),
 			selector({
                 sequencer({
@@ -46,18 +46,23 @@ void FarmerBT::evaluate(hlt::Game* game,
     Context ctx{ game, ship, command };
 
     hlt::log::log("--- Ship " + std::to_string(ship->id) + " ---");
+    tree->evaluate(ctx);
+}
+
+BT_NODE::State FarmerBT::alreadyGoing(Context& ctx)
+{
     bool goingHomeFlag = false;
-    auto it = s_goingHomeStates.find(ship->id);
+    auto it = s_goingHomeStates.find(ctx.ship->id);
     if (it != s_goingHomeStates.end()) {
         goingHomeFlag = it->second;
     }
 
     if (goingHomeFlag)
     {
-        goingBackHome(ctx);
-        hlt::log::log("just going home bruh");
+        printLog("Just going home bruh", ctx);
+        return BT_NODE::State::SUCCESS;
     }
-    else { tree->evaluate(ctx); }
+    return  BT_NODE::State::FAILURE;
 }
 
 BT_NODE::State FarmerBT::enemyTooClose(Context& ctx)
@@ -82,6 +87,7 @@ BT_NODE::State FarmerBT::timeIsUp(Context& ctx)
     if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) >= hlt::constants::MAX_TURNS-ctx.game->turn_number - 10)
     {
 		printLog("Time's up !", ctx);
+        ctx.timeIsUp = true;
         return BT_NODE::State::SUCCESS;
     }
     printLog("There is time left", ctx);
