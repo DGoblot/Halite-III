@@ -97,7 +97,7 @@ BT_NODE::State FarmerBT::fleeingPossible(Context& ctx)
 
 BT_NODE::State FarmerBT::EnoughHaliteForDropoff(Context& ctx)
 {
-    if (ctx.ship->halite + ctx.game->me->halite + ctx.game->game_map->at(ctx.ship->position)->halite >= 4000)
+    if (ctx.ship->halite + ctx.game->me->halite /*+ ctx.game->game_map->at(ctx.ship->position)->halite*/ >= 4000)
     {
         hlt::log::log("Enough halite for dropoff");
         return BT_NODE::State::SUCCESS;
@@ -113,7 +113,7 @@ BT_NODE::State FarmerBT::NoDropoffNearby(Context& ctx)
         min_distance = std::min(min_distance, ctx.game->game_map->calculate_distance(ctx.ship->position, dropoff.second->position));
     }
     
-    if (min_distance > 5)
+    if (min_distance > 10 && ctx.game->turn_number < 300)
     {
         hlt::log::log("No structures nearby");
         return BT_NODE::State::SUCCESS;
@@ -194,21 +194,31 @@ BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
 {
     s_goingHomeStates[ctx.ship->id] = true;
 
+	hlt::Position goal = ctx.game->me->shipyard->position;
+    int min_distance = ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position);
+
+    for (auto& dropoff : ctx.game->me->dropoffs) {
+        if (min_distance > ctx.game->game_map->calculate_distance(ctx.ship->position, dropoff.second->position))
+        {
+            goal = dropoff.second->position;
+		}
+    }
+
     hlt::Direction nextDir;
-    if(ctx.game->game_map->calculate_distance(ctx.ship->position,  ctx.game->me->shipyard->position) <= 1)
+    if(ctx.game->game_map->calculate_distance(ctx.ship->position,  goal) <= 1)
     {
-        nextDir = ctx.game->game_map->naive_navigate(ctx.ship, ctx.game->me->shipyard->position);
+        nextDir = ctx.game->game_map->naive_navigate(ctx.ship, goal);
     } else
     {
 		nextDir = ctx.game->game_map->naive_navigate(
 			ctx.ship,
-			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.game->me->shipyard->position).end()-2));
+			*(ctx.game->game_map->find_path(ctx.ship->position, goal).end()-2));
     }
     *ctx.command =
         ctx.ship->move(nextDir);
 
     printLog("Home run : " + std::to_string(ctx.ship->position.directional_offset(nextDir).x) + ", " + std::to_string(ctx.ship->position.directional_offset(nextDir).y), ctx);
-    if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) == 0) {
+    if (ctx.game->game_map->calculate_distance(ctx.ship->position, goal) == 0) {
         s_goingHomeStates[ctx.ship->id] = false;
     }
     
@@ -218,6 +228,7 @@ BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
 BT_NODE::State FarmerBT::createDropoff(Context& ctx)
 {
     *ctx.command = ctx.ship->make_dropoff();
+	ctx.game->me->halite -= 4000;
 
     printLog("Making dropoff", ctx);
     return BT_NODE::State::SUCCESS;

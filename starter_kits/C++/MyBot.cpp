@@ -48,6 +48,11 @@ int main(int argc, char* argv[]) {
 
         vector<Command> command_queue;
 
+        for (const auto& dropoof_iterator : me->dropoffs) {
+			shared_ptr<Dropoff> dropoff = dropoof_iterator.second;
+            game.game_map->at(dropoff->position.directional_offset(Direction::WEST))->structureExit = true;
+        }
+
         for (const auto& ship_iterator : me->ships) {
             shared_ptr<Ship> ship = ship_iterator.second;
             Command shipCommand;

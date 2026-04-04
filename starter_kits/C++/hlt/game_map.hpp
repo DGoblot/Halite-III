@@ -106,7 +106,7 @@ namespace hlt {
         	return total_path;
         }
 
-        std::vector<Position> find_path(Position start_n, Position goal_n, bool exiting_shipyard = false)
+        std::vector<Position> find_path(Position start_n, Position goal_n, bool exiting_structure = false)
         {
             Position start = normalize(start_n);
             Position goal = normalize(goal_n);
@@ -167,7 +167,7 @@ namespace hlt {
                     }
                     int tentativeGScore = gScore.at(current) + at(current)->halite + speedOverHalite;
                     if(at(neighbor)->is_occupied() && neighbor!=goal ||
-                        !exiting_shipyard && at(neighbor)->structureExit)
+                        !exiting_structure && at(neighbor)->structureExit)
                     {
                         tentativeGScore = INT_MAX;
                     }
