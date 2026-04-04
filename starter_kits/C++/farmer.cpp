@@ -178,9 +178,6 @@ BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
     hlt::log::log("Home run : " + std::to_string(ctx.ship->position.directional_offset(nextDir).x) + ", " + std::to_string(ctx.ship->position.directional_offset(nextDir).y));
     if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) == 0) {
         s_goingHomeStates[ctx.ship->id] = false;
-        if (ctx.game->me->ships.find(ctx.ship->id) != ctx.game->me->ships.end()) {
-            ctx.game->me->ships[ctx.ship->id]->goingHome = false;
-        }
     }
     
     return BT_NODE::State::SUCCESS;
