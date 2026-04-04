@@ -203,11 +203,11 @@ BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
 		}
     }
 
-    hlt::Direction nextDir = getNextDirectionTowards(ctx.game->me->shipyard->position, ctx);
+    hlt::Direction nextDir = getNextDirectionTowards(goal, ctx, ctx.timeIsUp);
     *ctx.command = ctx.ship->move(nextDir);
 
     printLog("Home run : " + ctx.ship->position.directional_offset(nextDir).to_string(), ctx);
-    if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) == 0) {
+    if (ctx.game->game_map->calculate_distance(ctx.ship->position, goal) == 0) {
         s_goingHomeStates[ctx.ship->id] = false;
     }
     
