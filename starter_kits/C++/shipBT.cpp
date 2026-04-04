@@ -19,7 +19,14 @@ hlt::Direction ShipBT::getNextDirectionTowards(hlt::Position destination, Contex
     {
         if (unsafeLastMove)
         {
-			nextDir = ctx.game->game_map->get_unsafe_moves(ctx.ship->position, destination_n)[0];
+			std::vector<hlt::Direction> unsafeMoves = ctx.game->game_map->get_unsafe_moves(ctx.ship->position, destination_n);
+            if (unsafeMoves.size() >= 1)
+            {
+                nextDir = unsafeMoves[0];
+            } else
+            {
+                nextDir = hlt::Direction::STILL;
+            }
         }
         else
         {
