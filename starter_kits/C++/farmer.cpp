@@ -51,12 +51,11 @@ BT_NODE::State FarmerBT::enemyTooClose(Context& ctx)
 
 BT_NODE::State FarmerBT::shipFull(Context& ctx)
 {
-    if (ctx.ship->halite >= 900)
+    if (ctx.ship->halite >= 700 + 20 * ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) || ctx.ship->halite >= 900)
     {
         hlt::log::log("Ship full");
         return BT_NODE::State::SUCCESS;
     }
-
     hlt::log::log("Ship not full");
     return BT_NODE::State::FAILURE;
 }
