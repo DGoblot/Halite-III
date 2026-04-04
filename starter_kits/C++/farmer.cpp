@@ -19,11 +19,16 @@ FarmerBT::FarmerBT()
 				leaf([](Context& ctx) { return timeIsUp(ctx); })
 			}),
 			selector({
+                sequencer({
+					leaf([](Context& ctx) { return EnoughHaliteForDropoff(ctx); }),
+                    leaf([](Context& ctx) { return NoDropoffNearby(ctx); }),
+                    leaf([](Context& ctx) { return createDropoff(ctx); })
+                }),
 				sequencer({
 					leaf([](Context& ctx) { return fleeingPossible(ctx); }),
 					leaf([](Context& ctx) { return goingBackHome(ctx); })
 				}),
-				leaf([](Context& ctx) { return createDropoff(ctx); })
+				
 			})
 		}),
 		sequencer({
@@ -48,7 +53,6 @@ void FarmerBT::evaluate(hlt::Game* game,
         goingHomeFlag = it->second;
     }
 
-    hlt::log::log(std::to_string(goingHomeFlag));
     if (goingHomeFlag)
     {
         goingBackHome(ctx);
@@ -87,8 +91,36 @@ BT_NODE::State FarmerBT::timeIsUp(Context& ctx)
 
 BT_NODE::State FarmerBT::fleeingPossible(Context& ctx)
 {
+    
     hlt::log::log("I believe I can flee");
     return BT_NODE::State::SUCCESS;
+}
+
+BT_NODE::State FarmerBT::EnoughHaliteForDropoff(Context& ctx)
+{
+    if (ctx.ship->halite + ctx.game->me->halite + ctx.game->game_map->cells[ctx.ship->position]->halite_amount >= 4000)
+    {
+        hlt::log::log("Enough halite for dropoff");
+        return BT_NODE::State::SUCCESS;
+	}
+	return BT_NODE::State::FAILURE;
+}
+
+BT_NODE::State FarmerBT::NoDropoffNearby(Context& ctx)
+{
+    int min_distance = ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position);
+    for (auto& dropoff : ctx.game->me->dropoffs) {
+        min_distance = std::min(min_distance, ctx.game->game_map->calculate_distance(ctx.ship->position, dropoff.second->position));
+    }
+    
+    if (min_distance > 5)
+    {
+        hlt::log::log("No structures nearby");
+        return BT_NODE::State::SUCCESS;
+	}
+
+    hlt::log::log("Structure nearby");
+    return BT_NODE::State::FAILURE;
 }
 
 BT_NODE::State FarmerBT::notOnBestCell(Context& ctx)
