@@ -107,7 +107,10 @@ namespace hlt {
         }
 
         std::vector<Position> find_path(Position start, Position goal, bool exiting_shipyard = false)
+        std::vector<Position> find_path(Position start_n, Position goal_n, bool exiting_shipyard = false)
         {
+            Position start = normalize(start_n);
+            Position goal = normalize(goal_n);
             if (calculate_distance(start, goal) <= 1)
             {
                 return { goal, start };
@@ -158,6 +161,7 @@ namespace hlt {
                 openSet.erase(std::remove(openSet.begin(), openSet.end(), current), openSet.end());
             	for (auto neighbor : current.get_surrounding_cardinals())
 				{
+                    neighbor = normalize(neighbor);
                     if (std::find(closedSet.begin(), closedSet.end(), neighbor) != closedSet.end())
                     {
                         continue;
