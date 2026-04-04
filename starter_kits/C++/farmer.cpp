@@ -46,7 +46,7 @@ void FarmerBT::evaluate(hlt::Game* game,
 {
     Context ctx{ game, ship, command };
 
-    hlt::log::log("Ship " + std::to_string(ship->id));
+    hlt::log::log("--- Ship " + std::to_string(ship->id) + " ---");
     bool goingHomeFlag = false;
     auto it = s_goingHomeStates.find(ship->id);
     if (it != s_goingHomeStates.end()) {
@@ -63,7 +63,7 @@ void FarmerBT::evaluate(hlt::Game* game,
 
 BT_NODE::State FarmerBT::enemyTooClose(Context& ctx)
 {
-    hlt::log::log("I have no enemy");
+    printLog("I have no enemy", ctx);
     return BT_NODE::State::FAILURE;
 }
 
@@ -71,10 +71,10 @@ BT_NODE::State FarmerBT::shipFull(Context& ctx)
 {
     if (ctx.ship->halite >= 700 + 20 * ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) || ctx.ship->halite >= 900)
     {
-        hlt::log::log("Ship full");
+		printLog("Ship full", ctx);
         return BT_NODE::State::SUCCESS;
     }
-    hlt::log::log("Ship not full");
+	printLog("Ship not full", ctx);
     return BT_NODE::State::FAILURE;
 }
 
@@ -82,17 +82,16 @@ BT_NODE::State FarmerBT::timeIsUp(Context& ctx)
 {
     if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) >= hlt::constants::MAX_TURNS-ctx.game->turn_number - 10)
     {
-		hlt::log::log("Time's up !");
+		printLog("Time's up !", ctx);
         return BT_NODE::State::SUCCESS;
     }
-    hlt::log::log("There is time left");
+    printLog("There is time left", ctx);
     return BT_NODE::State::FAILURE;
 }
 
 BT_NODE::State FarmerBT::fleeingPossible(Context& ctx)
 {
-    
-    hlt::log::log("I believe I can flee");
+    printLog("I believe I can flee", ctx);
     return BT_NODE::State::SUCCESS;
 }
 
@@ -163,11 +162,11 @@ BT_NODE::State FarmerBT::notOnBestCell(Context& ctx)
 
     if (betterCell)
     {
-        hlt::log::log("Better cell nearby");
+        printLog("Better cell nearby: " + ctx.bestNearbyCell.to_string(), ctx);
         return BT_NODE::State::SUCCESS;
     }
 
-    hlt::log::log("Cell is good");
+    printLog("Cell is good", ctx);
     return BT_NODE::State::FAILURE;
 }
 
@@ -182,11 +181,11 @@ BT_NODE::State FarmerBT::worthMoving(Context& ctx)
     if (current <= 10 ||
         (current <= 100 && best - current > current))
     {
-        hlt::log::log("Worth moving");
+        printLog("Worth moving", ctx);
         return BT_NODE::State::SUCCESS;
     }
 
-    hlt::log::log("Not worth moving");
+    printLog("Not worth moving", ctx);
     return BT_NODE::State::FAILURE;
 }
 
@@ -207,7 +206,7 @@ BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
     *ctx.command =
         ctx.ship->move(nextDir);
 
-    hlt::log::log("Home run : " + std::to_string(ctx.ship->position.directional_offset(nextDir).x) + ", " + std::to_string(ctx.ship->position.directional_offset(nextDir).y));
+    printLog("Home run : " + std::to_string(ctx.ship->position.directional_offset(nextDir).x) + ", " + std::to_string(ctx.ship->position.directional_offset(nextDir).y), ctx);
     if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) == 0) {
         s_goingHomeStates[ctx.ship->id] = false;
     }
@@ -219,7 +218,7 @@ BT_NODE::State FarmerBT::createDropoff(Context& ctx)
 {
     *ctx.command = ctx.ship->make_dropoff();
 
-    hlt::log::log("Making dropoff");
+    printLog("Making dropoff", ctx);
     return BT_NODE::State::SUCCESS;
 }
 
@@ -227,7 +226,7 @@ BT_NODE::State FarmerBT::farm(Context& ctx)
 {
     *ctx.command = ctx.ship->stay_still();
 
-    hlt::log::log("Farming");
+    printLog("Farming", ctx);
     return BT_NODE::State::SUCCESS;
 }
 
@@ -247,7 +246,7 @@ BT_NODE::State FarmerBT::goingToHaliteSpot(Context& ctx)
     *ctx.command =
         ctx.ship->move(nextDir);
 
-    hlt::log::log("Going to better halite spot : " + std::to_string(ctx.ship->position.directional_offset(nextDir).x) + ", " + std::to_string(ctx.ship->position.directional_offset(nextDir).y));
+    printLog("Going to better halite spot : " + ctx.ship->position.directional_offset(nextDir).to_string(), ctx);
     return BT_NODE::State::SUCCESS;
 }
 
@@ -257,7 +256,7 @@ BT_NODE::State FarmerBT::nearbyTarget(Context& ctx)
     if (ctx.ship->halite <= 50 && hlt::constants::MAX_TURNS - ctx.game->turn_number <= 10)
     {
         circle_radius = ctx.game->game_map->width;
-        hlt::log::log("Last minute hunter mode");
+        printLog("Last minute hunter mode", ctx);
     }
     hlt::Position pos = ctx.ship->position;
     int bestTargetCargo = 0;
@@ -292,10 +291,10 @@ BT_NODE::State FarmerBT::nearbyTarget(Context& ctx)
     }
     if (bestTargetCargo > 0 && (bestHunter(ctx) == ctx.ship || hlt::constants::MAX_TURNS - ctx.game->turn_number <= 10))
     {
-    	hlt::log::log("Target Acquired");
+    	printLog("Target Acquired: " + ctx.target->position.to_string(), ctx);
         return BT_NODE::State::SUCCESS;
     }
-    hlt::log::log("No Target");
+    printLog("No Target", ctx);
     return  BT_NODE::State::FAILURE;
 }
 
@@ -315,10 +314,10 @@ BT_NODE::State FarmerBT::loadAdvantage(Context& ctx)
     }
     if (ctx.target->halite - ctx.ship->halite >= 300 && (ctx.game->me->halite >= 1000 || ctx.game->me->ships.size() > opponent->ships.size()))
     {
-        hlt::log::log("Big fish");
+        printLog("Big fish", ctx);
         return BT_NODE::State::SUCCESS;
     }
-    hlt::log::log("Not big enough target");
+    printLog("Not big enough target", ctx);
     return BT_NODE::State::FAILURE;
 }
 
@@ -335,7 +334,7 @@ BT_NODE::State FarmerBT::chaseTarget(Context& ctx)
 			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.target->position, true).end()-2));
     }
     *ctx.command = ctx.ship->move(next_move);
-    hlt::log::log("Pursuit predation");
+    printLog("Pursuit predation", ctx);
     return BT_NODE::State::SUCCESS;
 }
 
@@ -363,4 +362,9 @@ std::shared_ptr<hlt::Ship> FarmerBT::bestHunter(Context& ctx)
 		}
 	}
     return hunter;
+}
+
+void FarmerBT::printLog(std::string message, Context& ctx)
+{
+	hlt::log::log("[T" + std::to_string(ctx.game->turn_number) + "S" + std::to_string(ctx.ship->id) + "]\t" + message);
 }

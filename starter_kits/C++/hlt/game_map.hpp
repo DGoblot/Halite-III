@@ -101,13 +101,15 @@ namespace hlt {
             log::log("Pathfinding Result = ");
             for (auto pos : total_path)
             {
-                log::log(std::to_string(pos.x) + ", " + std::to_string(pos.y));
+                log::log(pos.to_string());
             }
         	return total_path;
         }
 
-        std::vector<Position> find_path(Position start, Position goal, bool exiting_shipyard = false)
+        std::vector<Position> find_path(Position start_n, Position goal_n, bool exiting_shipyard = false)
         {
+            Position start = normalize(start_n);
+            Position goal = normalize(goal_n);
             if (calculate_distance(start, goal) <= 1)
             {
                 return { goal, start };
@@ -149,7 +151,7 @@ namespace hlt {
                         current = pos;
 	                }
                 }
-                log::log("Pathfinding testing position :" + std::to_string(current.x) + ", " + std::to_string(current.y));
+                //log::log("Pathfinding testing position :" + std::to_string(current.x) + ", " + std::to_string(current.y));
                 if (current == goal)
                 {
                     return reconstruct_path(cameFrom, current);
@@ -158,6 +160,7 @@ namespace hlt {
                 openSet.erase(std::remove(openSet.begin(), openSet.end(), current), openSet.end());
             	for (auto neighbor : current.get_surrounding_cardinals())
 				{
+                    neighbor = normalize(neighbor);
                     if (std::find(closedSet.begin(), closedSet.end(), neighbor) != closedSet.end())
                     {
                         continue;

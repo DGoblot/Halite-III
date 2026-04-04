@@ -5,6 +5,7 @@
 #include <random>
 #include <ctime>
 #include "farmer.hpp"
+#include "hunter.hpp"
 #include <fstream>
 
 using namespace std;
@@ -27,12 +28,15 @@ int main(int argc, char* argv[]) {
     unique_ptr<GameMap>& initial_game_map = game.game_map;
 
     FarmerBT farmerBT = FarmerBT();
+    HunterBT hunterBT = HunterBT();
     ofstream log("log.txt");
     log << initial_game_map->best_zone();
     log.close();
 
     game.game_map->at(game.me->shipyard->position.directional_offset(Direction::WEST))->structureExit = true;
 
+    shared_ptr<Ship> hunter;
+    
     game.ready("MyCppBot");
 
     log::log("Successfully created bot! My Player ID is " + to_string(game.my_id) + ". Bot rng seed is " + to_string(rng_seed) + ".");
@@ -47,8 +51,15 @@ int main(int argc, char* argv[]) {
         for (const auto& ship_iterator : me->ships) {
             shared_ptr<Ship> ship = ship_iterator.second;
             Command shipCommand;
-            farmerBT.evaluate(&game, ship, &shipCommand);
-            command_queue.push_back(shipCommand);
+            if (hunter != nullptr && ship->id == hunter->id)
+            {
+                hunterBT.evaluate(&game, ship, &shipCommand);
+                command_queue.push_back(shipCommand);
+            } else
+            {
+				farmerBT.evaluate(&game, ship, &shipCommand);
+				command_queue.push_back(shipCommand);
+            }
         }
 
         if (
@@ -57,6 +68,11 @@ int main(int argc, char* argv[]) {
             !game_map->at(me->shipyard)->is_occupied())
         {
             command_queue.push_back(me->shipyard->spawn());
+            if (hunter == nullptr && me->ships.size()>1)
+            {
+                log::log("hunter ship");
+                hunter = me->ships.at(1);
+            }
         }
 
         if (!game.end_turn(command_queue)) {

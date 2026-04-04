@@ -36,4 +36,6 @@ private:
     static BT_NODE::State chaseTarget(Context& ctx);
 
     static std::shared_ptr<hlt::Ship> bestHunter(Context& ctx);
+    
+    static void printLog(std::string message, Context& ctx);
 };

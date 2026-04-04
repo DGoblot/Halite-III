@@ -77,6 +77,11 @@ namespace hlt {
             }
             return zone;
         }
+
+        std::string to_string()
+        {
+            return "(" + std::to_string(x) + ", " + std::to_string(y) + ")";
+        }
     };
 
     static std::ostream& operator<<(std::ostream& out, const Position& position) {
