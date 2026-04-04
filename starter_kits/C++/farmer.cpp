@@ -97,11 +97,12 @@ BT_NODE::State FarmerBT::fleeingPossible(Context& ctx)
 
 BT_NODE::State FarmerBT::EnoughHaliteForDropoff(Context& ctx)
 {
-    if (ctx.ship->halite + ctx.game->me->halite + ctx.game->game_map->cells[ctx.ship->position]->halite_amount >= 4000)
+    if (ctx.ship->halite + ctx.game->me->halite + ctx.game->game_map->at(ctx.ship->position)->halite >= 4000)
     {
         hlt::log::log("Enough halite for dropoff");
         return BT_NODE::State::SUCCESS;
 	}
+    hlt::log::log("Not enough halite for dropoff");
 	return BT_NODE::State::FAILURE;
 }
 
