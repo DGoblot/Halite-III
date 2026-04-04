@@ -1,11 +1,14 @@
 #pragma once
 #include <string>
+#include "hlt/game.hpp"
+#include "hlt/constants.hpp"
+#include "BT.hpp"
+#include "Context.hpp"
 
 class ShipBT
 {
 protected:
-	static void printLog(std::string message, Context& ctx)
-	{
-		hlt::log::log("[T" + std::to_string(ctx.game->turn_number) + "S" + std::to_string(ctx.ship->id) + "]\t" + message);
-	}
+    static void printLog(const std::string& message, const Context& ctx);
+    static hlt::Direction getNextDirectionTowards(hlt::Position destination, Context& ctx, bool unsafeLastMove = false);
+    static std::shared_ptr<hlt::Player> getOpponent(Context& ctx);
 };

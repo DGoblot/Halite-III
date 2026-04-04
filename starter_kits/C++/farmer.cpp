@@ -1,5 +1,4 @@
 ﻿#include "farmer.hpp"
-#include "hlt/log.hpp"
 #include <unordered_map>
 
 static std::unordered_map<hlt::EntityId, bool> s_goingHomeStates;
@@ -162,20 +161,10 @@ BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
 {
     s_goingHomeStates[ctx.ship->id] = true;
 
-    hlt::Direction nextDir;
-    if(ctx.game->game_map->calculate_distance(ctx.ship->position,  ctx.game->me->shipyard->position) <= 1)
-    {
-        nextDir = ctx.game->game_map->naive_navigate(ctx.ship, ctx.game->me->shipyard->position);
-    } else
-    {
-		nextDir = ctx.game->game_map->naive_navigate(
-			ctx.ship,
-			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.game->me->shipyard->position).end()-2));
-    }
-    *ctx.command =
-        ctx.ship->move(nextDir);
+    hlt::Direction nextDir = getNextDirectionTowards(ctx.game->me->shipyard->position, ctx);
+    *ctx.command = ctx.ship->move(nextDir);
 
-    printLog("Home run : " + std::to_string(ctx.ship->position.directional_offset(nextDir).x) + ", " + std::to_string(ctx.ship->position.directional_offset(nextDir).y), ctx);
+    printLog("Home run : " + ctx.ship->position.directional_offset(nextDir).to_string(), ctx);
     if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) == 0) {
         s_goingHomeStates[ctx.ship->id] = false;
     }
@@ -201,20 +190,8 @@ BT_NODE::State FarmerBT::farm(Context& ctx)
 
 BT_NODE::State FarmerBT::goingToHaliteSpot(Context& ctx)
 {
-    hlt::Direction nextDir;
-    bool exitingStructure = ctx.game->game_map->at(ctx.ship->position)->has_structure();
-    if(ctx.game->game_map->calculate_distance(ctx.ship->position,  ctx.bestNearbyCell) <= 1)
-    {
-        nextDir = ctx.game->game_map->naive_navigate(ctx.ship, ctx.bestNearbyCell);
-    } else
-    {
-		nextDir = ctx.game->game_map->naive_navigate(
-			ctx.ship,
-			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.bestNearbyCell, exitingStructure).end()-2));    
-    }
-    *ctx.command =
-        ctx.ship->move(nextDir);
-
+    hlt::Direction nextDir = getNextDirectionTowards(ctx.bestNearbyCell, ctx);
+    *ctx.command = ctx.ship->move(nextDir);
     printLog("Going to better halite spot : " + ctx.ship->position.directional_offset(nextDir).to_string(), ctx);
     return BT_NODE::State::SUCCESS;
 }
@@ -273,14 +250,7 @@ BT_NODE::State FarmerBT::loadAdvantage(Context& ctx)
     {
         return BT_NODE::State::SUCCESS;
     }
-    std::shared_ptr<hlt::Player> opponent;
-    for (std::shared_ptr<hlt::Player> player : ctx.game->players)
-    {
-        if (player->id != ctx.game->me->id)
-        {
-            opponent = player;
-        }
-    }
+    std::shared_ptr<hlt::Player> opponent = getOpponent(ctx);
     if (ctx.target->halite - ctx.ship->halite >= 300 && (ctx.game->me->halite >= 1000 || ctx.game->me->ships.size() > opponent->ships.size()))
     {
         printLog("Big fish", ctx);
@@ -292,17 +262,8 @@ BT_NODE::State FarmerBT::loadAdvantage(Context& ctx)
 
 BT_NODE::State FarmerBT::chaseTarget(Context& ctx)
 {
-    hlt::Direction next_move = ctx.game->game_map->naive_navigate(ctx.ship, ctx.target->position);
-    if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.target->position) == 1)
-    {
-        next_move = ctx.game->game_map->get_unsafe_moves(ctx.ship->position, ctx.target->position)[0];
-    } else
-    {
-		next_move = ctx.game->game_map->naive_navigate(
-			ctx.ship,
-			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.target->position, true).end()-2));
-    }
-    *ctx.command = ctx.ship->move(next_move);
+    hlt::Direction nextDir = getNextDirectionTowards(ctx.target->position, ctx, true);
+    *ctx.command = ctx.ship->move(nextDir);
     printLog("Pursuit predation", ctx);
     return BT_NODE::State::SUCCESS;
 }

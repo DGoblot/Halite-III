@@ -6,7 +6,6 @@
 #include <ctime>
 #include "farmer.hpp"
 #include "hunter.hpp"
-#include <fstream>
 
 using namespace std;
 using namespace hlt;
@@ -29,9 +28,7 @@ int main(int argc, char* argv[]) {
 
     FarmerBT farmerBT = FarmerBT();
     HunterBT hunterBT = HunterBT();
-    ofstream log("log.txt");
-    log << initial_game_map->best_zone();
-    log.close();
+    log::log(initial_game_map->best_zone().to_string());
 
     game.game_map->at(game.me->shipyard->position.directional_offset(Direction::WEST))->structureExit = true;
 
