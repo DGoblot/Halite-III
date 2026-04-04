@@ -122,9 +122,9 @@ namespace hlt {
             std::map<Position, Position> cameFrom;
 
             std::map<Position, int> gScore;
-            for (auto cellList : cells)
+            for (std::vector<MapCell> cellList : cells)
             {
-                for (auto cell: cellList)
+                for (MapCell cell: cellList)
                 {
                     gScore.insert({cell.position, INT_MAX});
                 }
@@ -132,9 +132,9 @@ namespace hlt {
             gScore.at(start) = 0;
 
             std::map<Position, int> fScore;
-            for (auto cellList : cells)
+            for (std::vector<MapCell> cellList : cells)
             {
-                for (auto cell: cellList)
+                for (MapCell cell: cellList)
                 {
                     fScore.insert({cell.position, INT_MAX});
                 }

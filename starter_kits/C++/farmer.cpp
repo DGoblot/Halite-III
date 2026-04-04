@@ -137,7 +137,7 @@ BT_NODE::State FarmerBT::notOnBestCell(Context& ctx)
             ctx.game->game_map->at(pos)->is_empty())
         {
             auto newCellValue = ctx.game->game_map->at(pos)->halite - 0.1 * ctx.game->game_map->at(pos)->halite * ctx.game->game_map->calculate_distance(ctx.ship->position, pos);
-            if (newCellValue > bestCellValue)
+            if (newCellValue > bestCellValue && !ctx.game->game_map->at(pos)->structureExit)
             {
                 bestCellValue = newCellValue;
 				ctx.bestNearbyCell = pos;
