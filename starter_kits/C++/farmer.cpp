@@ -1,5 +1,8 @@
 ﻿#include "farmer.hpp"
 #include "hlt/log.hpp"
+#include <unordered_map>
+
+static std::unordered_map<hlt::EntityId, bool> s_goingHomeStates;
 
 FarmerBT::FarmerBT()
 {
@@ -39,8 +42,19 @@ void FarmerBT::evaluate(hlt::Game* game,
     Context ctx{ game, ship, command };
 
     hlt::log::log("--- Ship " + std::to_string(ship->id) + " ---");
+    bool goingHomeFlag = false;
+    auto it = s_goingHomeStates.find(ship->id);
+    if (it != s_goingHomeStates.end()) {
+        goingHomeFlag = it->second;
+    }
 
-    tree->evaluate(ctx);
+    hlt::log::log(std::to_string(goingHomeFlag));
+    if (goingHomeFlag)
+    {
+        goingBackHome(ctx);
+        hlt::log::log("just going home bruh");
+    }
+    else { tree->evaluate(ctx); }
 }
 
 BT_NODE::State FarmerBT::enemyTooClose(Context& ctx)
@@ -146,6 +160,8 @@ BT_NODE::State FarmerBT::worthMoving(Context& ctx)
 
 BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
 {
+    s_goingHomeStates[ctx.ship->id] = true;
+
     hlt::Direction nextDir;
     if(ctx.game->game_map->calculate_distance(ctx.ship->position,  ctx.game->me->shipyard->position) <= 1)
     {
@@ -160,6 +176,10 @@ BT_NODE::State FarmerBT::goingBackHome(Context& ctx)
         ctx.ship->move(nextDir);
 
     printLog("Home run : " + std::to_string(ctx.ship->position.directional_offset(nextDir).x) + ", " + std::to_string(ctx.ship->position.directional_offset(nextDir).y), ctx);
+    if (ctx.game->game_map->calculate_distance(ctx.ship->position, ctx.game->me->shipyard->position) == 0) {
+        s_goingHomeStates[ctx.ship->id] = false;
+    }
+    
     return BT_NODE::State::SUCCESS;
 }
 
@@ -190,7 +210,7 @@ BT_NODE::State FarmerBT::goingToHaliteSpot(Context& ctx)
     {
 		nextDir = ctx.game->game_map->naive_navigate(
 			ctx.ship,
-			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.bestNearbyCell, exitingStructure).end()-2));
+			*(ctx.game->game_map->find_path(ctx.ship->position, ctx.bestNearbyCell, exitingStructure).end()-2));    
     }
     *ctx.command =
         ctx.ship->move(nextDir);
