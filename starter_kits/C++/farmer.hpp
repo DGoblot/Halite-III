@@ -4,8 +4,9 @@
 #include "hlt/game.hpp"
 #include "hlt/constants.hpp"
 #include "Context.hpp"
+#include "shipBT.hpp"
 
-class FarmerBT
+class FarmerBT:ShipBT
 {
 public:
     FarmerBT();
@@ -34,6 +35,4 @@ private:
     static BT_NODE::State chaseTarget(Context& ctx);
 
     static std::shared_ptr<hlt::Ship> bestHunter(Context& ctx);
-    
-    static void printLog(std::string message, Context& ctx);
 };

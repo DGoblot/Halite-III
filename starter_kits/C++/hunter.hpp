@@ -4,8 +4,9 @@
 #include "hlt/game.hpp"
 #include "hlt/constants.hpp"
 #include "Context.hpp"
+#include "shipBT.hpp"
 
-class HunterBT
+class HunterBT:ShipBT
 {
 public:
     HunterBT();
