@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
             if (hunter == nullptr && me->ships.size()>1)
             {
                 log::log("hunter ship");
-                hunter = me->ships.at(1);
+                hunter = me->ships.begin()->second;
             }
         }
 
