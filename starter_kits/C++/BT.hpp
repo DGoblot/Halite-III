@@ -5,6 +5,8 @@
 #include <vector>
 #include "Context.hpp"
 
+//general behaviour tree class, credits to Axel Buendia for the code
+
 class BT_NODE {
 public:
     enum class State {

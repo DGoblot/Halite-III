@@ -3,6 +3,8 @@
 #include <memory>
 #include "hlt/game.hpp"
 
+//everything the beahvior tree needs to process inputs
+
 struct Context
 {
 	hlt::Game* game;

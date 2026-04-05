@@ -1,5 +1,7 @@
 ﻿#include "shipBT.hpp"
 
+//ship parent class, includes usefull methods like easier log and better movement
+
 void ShipBT::printLog(const std::string& message, const Context& ctx)
 {
 	hlt::log::log("[T" + std::to_string(ctx.game->turn_number) + "S" + std::to_string(ctx.ship->id) + "]\t" + message);

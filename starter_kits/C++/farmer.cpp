@@ -5,9 +5,12 @@ const int FarmerBT::MAX_DROPOFF_NB = 2;
 const int FarmerBT::DROPOFF_TURN_LIMIT = 300;
 const int FarmerBT::DROPOFF_RADIUS = 10;
 
+//Complete behaviour tree for the farmer ship
+//evaluate lauches the tree, every other method is a input or an action
+
 FarmerBT::FarmerBT()
 {
-    //Behaviour Tree
+    
     tree = selector({
         sequencer({
             leaf([](Context& ctx) { return nearbyTarget(ctx); }),

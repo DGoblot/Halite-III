@@ -1,5 +1,7 @@
 #include "hunter.hpp"
 
+//the hunter ship goal is to block the ennemy shipyard to prevent storing halite
+
 HunterBT::HunterBT()
 {
 }
