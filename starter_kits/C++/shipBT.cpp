@@ -17,13 +17,16 @@ hlt::Direction ShipBT::getNextDirectionTowards(hlt::Position destination, Contex
     bool exitingStructure = ctx.game->game_map->at(ctx.ship->position)->has_structure();
     if(ctx.game->game_map->calculate_distance(ctx.ship->position,  destination_n) <= 1)
     {
-        if (unsafeLastMove)
+		const bool isDestinationDropoff = ctx.game->game_map->at(destination)->has_structure() && ctx.game->game_map->at(destination)->structure->owner == ctx.game->me->id;
+        const bool isDestinationOccupiedByEnemy = ctx.game->game_map->at(destination)->is_occupied() && ctx.game->game_map->at(destination)->ship->owner != ctx.game->me->id;
+        if (unsafeLastMove || isDestinationDropoff && isDestinationOccupiedByEnemy)
         {
 			std::vector<hlt::Direction> unsafeMoves = ctx.game->game_map->get_unsafe_moves(ctx.ship->position, destination_n);
-            if (unsafeMoves.size() >= 1)
+            if (!unsafeMoves.empty())
             {
                 nextDir = unsafeMoves[0];
-            } else
+            }
+        	else
             {
                 nextDir = hlt::Direction::STILL;
             }
