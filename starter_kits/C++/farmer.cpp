@@ -158,7 +158,7 @@ BT_NODE::State FarmerBT::notOnBestCell(Context& ctx)
     bool betterCell = false;
     double bestCellValue = 0;
 
-    for (auto pos : surrounding)
+    for (auto& pos : surrounding)
     {
         if (ctx.game->game_map->at(pos)->halite >
             ctx.game->game_map->at(ctx.ship->position)->halite &&
@@ -289,7 +289,7 @@ BT_NODE::State FarmerBT::nearbyTarget(Context& ctx)
                     if (player->id != ctx.game->me->id)
                     {
                         int smallestDropoffDist = ctx.game->game_map->calculate_distance(target->position, player->shipyard->position);
-                        for (auto dropoff : player->dropoffs)
+                        for (auto& dropoff : player->dropoffs)
                         {
                             smallestDropoffDist = std::min(smallestDropoffDist, ctx.game->game_map->calculate_distance(target->position, dropoff.second->position));
                         }
