@@ -24,6 +24,7 @@ private:
     static BT_NODE::State fleeingPossible(Context& ctx);
     static BT_NODE::State EnoughHaliteForDropoff(Context& ctx);
 	static BT_NODE::State NoDropoffNearby(Context& ctx);
+	static BT_NODE::State IsDropoffWorthIt(Context& ctx);
     static BT_NODE::State notOnBestCell(Context& ctx);
     static BT_NODE::State worthMoving(Context& ctx);
     static BT_NODE::State nearbyTarget(Context& ctx);

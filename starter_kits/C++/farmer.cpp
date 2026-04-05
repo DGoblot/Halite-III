@@ -1,7 +1,7 @@
 ﻿#include "farmer.hpp"
 
 std::unordered_map<int, bool> FarmerBT::s_goingHomeStates;
-const int FarmerBT::MAX_DROPOFF_NB = 1;
+const int FarmerBT::MAX_DROPOFF_NB = 2;
 
 FarmerBT::FarmerBT()
 {
@@ -20,6 +20,7 @@ FarmerBT::FarmerBT()
 			}),
 			selector({
                 sequencer({
+                    leaf([](Context& ctx) { return IsDropoffWorthIt(ctx); }),
 					leaf([](Context& ctx) { return EnoughHaliteForDropoff(ctx); }),
                     leaf([](Context& ctx) { return NoDropoffNearby(ctx); }),
                     leaf([](Context& ctx) { return createDropoff(ctx); })
@@ -101,9 +102,26 @@ BT_NODE::State FarmerBT::fleeingPossible(Context& ctx)
     return BT_NODE::State::SUCCESS;
 }
 
+BT_NODE::State FarmerBT::IsDropoffWorthIt(Context& ctx)
+{
+    if (ctx.game->turn_number > 300)
+    {
+        hlt::log::log("No time for a dropoff !");
+        return BT_NODE::State::FAILURE;
+    }
+    if (ctx.game->me->dropoffs.size() >= MAX_DROPOFF_NB)
+    {
+        hlt::log::log("Enough dropoff already !");
+        return BT_NODE::State::FAILURE;
+    }
+
+    hlt::log::log("A dropoff could be nice");
+    return BT_NODE::State::SUCCESS;
+}
+
 BT_NODE::State FarmerBT::EnoughHaliteForDropoff(Context& ctx)
 {
-    if (ctx.ship->halite + ctx.game->me->halite /*+ ctx.game->game_map->at(ctx.ship->position)->halite*/ >= 4000)
+    if (ctx.ship->halite + ctx.game->me->halite >= 4000)
     {
         hlt::log::log("Enough halite for dropoff");
         return BT_NODE::State::SUCCESS;
@@ -119,7 +137,7 @@ BT_NODE::State FarmerBT::NoDropoffNearby(Context& ctx)
         min_distance = std::min(min_distance, ctx.game->game_map->calculate_distance(ctx.ship->position, dropoff.second->position));
     }
     
-    if (min_distance > 10 && ctx.game->turn_number < 300 && ctx.game->me->dropoffs.size() <= MAX_DROPOFF_NB)
+    if (min_distance > 10)
     {
         hlt::log::log("No structures nearby");
         return BT_NODE::State::SUCCESS;
