@@ -2,9 +2,12 @@
 
 std::unordered_map<int, bool> FarmerBT::s_goingHomeStates;
 const int FarmerBT::MAX_DROPOFF_NB = 2;
+const int FarmerBT::DROPOFF_TURN_LIMIT = 300;
+const int FarmerBT::DROPOFF_RADIUS = 10;
 
 FarmerBT::FarmerBT()
 {
+    //Behaviour Tree
     tree = selector({
         sequencer({
             leaf([](Context& ctx) { return nearbyTarget(ctx); }),
@@ -104,18 +107,18 @@ BT_NODE::State FarmerBT::fleeingPossible(Context& ctx)
 
 BT_NODE::State FarmerBT::IsDropoffWorthIt(Context& ctx)
 {
-    if (ctx.game->turn_number > 300)
+    if (ctx.game->turn_number > DROPOFF_TURN_LIMIT)
     {
-        hlt::log::log("No time for a dropoff !");
+        printLog("No time for a dropoff !", ctx);
         return BT_NODE::State::FAILURE;
     }
     if (ctx.game->me->dropoffs.size() >= MAX_DROPOFF_NB)
     {
-        hlt::log::log("Enough dropoff already !");
+        printLog("Enough dropoff already !", ctx);
         return BT_NODE::State::FAILURE;
     }
 
-    hlt::log::log("A dropoff could be nice");
+    printLog("A dropoff could be nice", ctx);
     return BT_NODE::State::SUCCESS;
 }
 
@@ -123,10 +126,10 @@ BT_NODE::State FarmerBT::EnoughHaliteForDropoff(Context& ctx)
 {
     if (ctx.ship->halite + ctx.game->me->halite >= 4000)
     {
-        hlt::log::log("Enough halite for dropoff");
+        printLog("Enough halite for dropoff", ctx);
         return BT_NODE::State::SUCCESS;
 	}
-    hlt::log::log("Not enough halite for dropoff");
+    printLog("Not enough halite for dropoff", ctx);
 	return BT_NODE::State::FAILURE;
 }
 
@@ -137,13 +140,13 @@ BT_NODE::State FarmerBT::NoDropoffNearby(Context& ctx)
         min_distance = std::min(min_distance, ctx.game->game_map->calculate_distance(ctx.ship->position, dropoff.second->position));
     }
     
-    if (min_distance > 10)
+    if (min_distance > DROPOFF_RADIUS)
     {
-        hlt::log::log("No structures nearby");
+        printLog("No structures nearby", ctx);
         return BT_NODE::State::SUCCESS;
 	}
 
-    hlt::log::log("Structure nearby");
+    printLog("Structure nearby", ctx);
     return BT_NODE::State::FAILURE;
 }
 
