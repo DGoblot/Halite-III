@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 
     shared_ptr<Ship> hunter;
     
-    game.ready("MyCppBot");
+    game.ready("KnowledgeCheckBot");
 
     log::log("Successfully created bot! My Player ID is " + to_string(game.my_id) + ". Bot rng seed is " + to_string(rng_seed) + ".");
 
