@@ -1,6 +1,7 @@
 ﻿#include "farmer.hpp"
 
 std::unordered_map<int, bool> FarmerBT::s_goingHomeStates;
+const int FarmerBT::MAX_DROPOFF_NB = 1;
 
 FarmerBT::FarmerBT()
 {
@@ -118,7 +119,7 @@ BT_NODE::State FarmerBT::NoDropoffNearby(Context& ctx)
         min_distance = std::min(min_distance, ctx.game->game_map->calculate_distance(ctx.ship->position, dropoff.second->position));
     }
     
-    if (min_distance > 10 && ctx.game->turn_number < 300)
+    if (min_distance > 10 && ctx.game->turn_number < 300 && ctx.game->me->dropoffs.size() <= MAX_DROPOFF_NB)
     {
         hlt::log::log("No structures nearby");
         return BT_NODE::State::SUCCESS;

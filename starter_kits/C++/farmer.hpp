@@ -11,6 +11,7 @@ public:
     void evaluate(hlt::Game* game,
         const std::shared_ptr<hlt::Ship> ship,
         hlt::Command* command);
+    static const int MAX_DROPOFF_NB;
 
 private:
     NodePtr tree;
